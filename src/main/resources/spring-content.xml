@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.1.xsd">
+
+
+
+    <context:property-placeholder ignore-resource-not-found="true" location="classpath*:*.properties"/>
+    <context:component-scan base-package="com.chanxi.controller"/>
+    <context:component-scan base-package="com.chanxi.service" />
+
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>
+        <property name="validationMessageSource" ref="messageSource"/>
+    </bean>
+    <bean id="messageSource" class="com.chanxi.utils.MessageSource">
+        <property name="basenames">
+            <list>
+                <value>lang/messages</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean"/>
+
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver">
+        <property name="defaultLocale" value="zh"/>
+    </bean>
+
+
+    <!--<context:component-scan base-package="com.yiju.web.wechat"/>-->
+    <!--<context:component-scan base-package="com.xiaozhu360.weixin">-->
+        <!--<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>-->
+        <!--<context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice"/>-->
+    <!--</context:component-scan>-->
+    <!-- 配置SqlSessionFactory对象 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 注入数据库连接池 -->
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 扫描model包 使用别名 -->
+        <property name="typeAliasesPackage" value="com.chatRobot.model"/>
+        <!-- 扫描sql配置文件:mapper需要的xml文件 -->
+        <property name="mapperLocations" value="classpath:/mybatis/mappers/**/*Dao.xml"/>
+    </bean>
+
+
+    <mvc:annotation-driven validator="validator" conversion-service="conversionService">
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <property name="objectMapper">
+                    <bean class="com.fasterxml.jackson.databind.ObjectMapper">
+                        <property name="dateFormat">
+                            <bean class="java.text.SimpleDateFormat">
+                                <constructor-arg type="java.lang.String" value="yyyy-MM-dd HH:mm:ss"/>
+                            </bean>
+                        </property>
+                        <property name="serializationInclusion" value="NON_NULL"/>
+                    </bean>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+
+    <!--<mvc:view-controller path="/" view-name="index"/>-->
+    <!--<mvc:view-controller path="**/" view-name="index"/>-->
+    <mvc:resources mapping="/static/**" location="/static/" order="-1"/>
+    <mvc:resources mapping="/favicon.ico" location="/static/images/" order="-1"/>
+    <mvc:resources mapping="/*.txt" location="/static/" order="-1"/>
+    <mvc:default-servlet-handler/>
+
+    <!-- 拦截器 -->
+    <!--<mvc:interceptors>-->
+        <!--<mvc:interceptor>-->
+            <!--<mvc:mapping path="/**"/>-->
+            <!--<mvc:exclude-mapping path="/static/**"/>-->
+            <!--<mvc:exclude-mapping path="/vcode"/>-->
+            <!--<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"/>-->
+        <!--</mvc:interceptor>-->
+        <!--<mvc:interceptor>-->
+            <!--<mvc:mapping path="/**"/>-->
+            <!--<bean class="com.xiaozhu360.weixin.interceptor.AuthInterceptor"/>-->
+        <!--</mvc:interceptor>-->
+        <!--<mvc:interceptor>-->
+            <!--<mvc:mapping path="/**"/>-->
+            <!--<mvc:exclude-mapping path="/static/**"/>-->
+            <!--<mvc:exclude-mapping path="/login"/>-->
+            <!--<mvc:exclude-mapping path="/vcode"/>-->
+            <!--<bean class="com.xiaozhu360.weixin.interceptor.NewsInterceptor"/>-->
+        <!--</mvc:interceptor>-->
+        <!--<mvc:interceptor>-->
+            <!--<mvc:mapping path="/**"/>-->
+            <!--<mvc:exclude-mapping path="/static/**"/>-->
+            <!--<mvc:exclude-mapping path="/login"/>-->
+            <!--<mvc:exclude-mapping path="/vcode"/>-->
+            <!--<bean class="com.xiaozhu360.weixin.interceptor.LoanInterceptor"/>-->
+        <!--</mvc:interceptor>-->
+        <!--<mvc:interceptor>-->
+            <!--<mvc:mapping path="/api/**"/>-->
+            <!--<mvc:exclude-mapping path="/api/tt"/>-->
+            <!--<mvc:exclude-mapping path="/api/tk"/>-->
+            <!--<mvc:exclude-mapping path="/api/wechat/**"/>-->
+            <!--<mvc:exclude-mapping path="/api/area/getAllProvinces"/>-->
+            <!--<mvc:exclude-mapping path="/api/weixin/**"/>-->
+            <!--<mvc:exclude-mapping path="/api/promoteBusiness/getPic "/>-->
+            <!--<mvc:exclude-mapping path="/api/aprilFoolsDay/** "/>-->
+            <!--<mvc:exclude-mapping path="/api/activity/annual-meeting/synthetic/poster"/>-->
+            <!--<bean class="com.xiaozhu360.weixin.interceptor.ApiInterceptor"/>-->
+        <!--</mvc:interceptor>-->
+    <!--</mvc:interceptors>-->
+
+    <!-- ===================================================== -->
+    <!-- ViewResolver For FreeMarkerConfigurer -->
+    <!-- ===================================================== -->
+    <bean id="freemarkerResolver" class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">
+        <property name="order" value="1"/>
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".ftl"/>
+        <property name="contentType" value="text/html;charset=utf-8"/>
+        <property name="viewClass" value="com.chanxi.view.ContextFreeMarkerView"/>
+        <property name="requestContextAttribute" value="request"/>
+        <property name="allowSessionOverride" value="true"/>
+        <property name="allowRequestOverride" value="true"/>
+        <property name="exposeSpringMacroHelpers" value="true"/>
+        <property name="exposeRequestAttributes" value="true"/>
+        <property name="exposeSessionAttributes" value="true"/>
+    </bean>
+    <bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+        <property name="templateLoaderPath" value="/"/>
+        <property name="freemarkerSettings">
+            <props>
+                <prop key="template_update_delay">5</prop>
+                <prop key="default_encoding">UTF-8</prop>
+                <prop key="locale">UTF-8</prop>
+                <prop key="datetime_format">yyyy-MM-dd HH:mm:ss</prop>
+                <prop key="date_format">yyyy-MM-dd</prop>
+                <prop key="time_format">HH:mm:ss</prop>
+                <prop key="number_format">0.####</prop>
+                <prop key="boolean_format">true,false</prop>
+                <prop key="whitespace_stripping">true</prop>
+                <prop key="tag_syntax">auto_detect</prop>
+                <prop key="url_escaping_charset">UTF-8</prop>
+                <prop key="auto_import">WEB-INF/pages/include/spring.ftl as spring</prop>
+                <prop key="template_exception_handler">RETHROW</prop>
+            </props>
+        </property>
+
+        <!--<property name="freemarkerVariables">-->
+            <!--<map>-->
+                <!--<entry key="debug" value="${debug}"/>-->
+                <!--<entry key="domain" value="${auth.cookie.domain}"/>-->
+            <!--</map>-->
+        <!--</property>-->
+    </bean>
+
+    <!-- Only needed because we require fileupload in the org.springframework.samples.mvc.fileupload package -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+          p:defaultEncoding="UTF-8"
+          p:maxInMemorySize="2097152"
+          p:maxUploadSize="4194304"/>
+
+
+    <task:scheduler id="scheduler" pool-size="10"/>
+
+    <task:executor id="asyncExecutor" pool-size="20-100" queue-capacity="500" />
+    <task:annotation-driven executor="asyncExecutor" scheduler="scheduler" proxy-target-class="true"/>
+
+    <bean id="applicationEventMulticaster" class="org.springframework.context.event.SimpleApplicationEventMulticaster">
+        <property name="taskExecutor" ref="asyncExecutor"/>
+    </bean>
+</beans>
