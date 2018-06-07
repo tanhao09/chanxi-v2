@@ -19,6 +19,10 @@ public class UserController  extends ApiBaseController{
     @Autowired
     private UserService userService;
 
+    /**
+     * @param args
+     * @return
+     */
     @RequestMapping(value = "/queryUser",method = RequestMethod.GET)
     public HttpResponse<?> selectUser(UserArgs args){
 
